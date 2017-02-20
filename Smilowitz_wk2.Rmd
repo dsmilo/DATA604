@@ -1,0 +1,185 @@
+---
+title: 'DATA 604 Assignment 2: Queueing Theory'
+author: "Dan Smilowitz"
+date: "February 11, 2017"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Problem 2
+For a uniform continuous distribution, the standard deviation is
+$$\sigma = \sqrt{\frac{(b - a)^2}{12}} = \sqrt{\frac{(1.9 - 0.1)^2}{12}} = 0.5196$$
+This standard deviation is expressed in minutes.
+
+The expected value of the distribution $E(S)$ is 1 minute, so $\mu = 1/E(S) = 1$.  As in Problem 1, $\lambda = 1/1.25 = 0.8$.  For a $G/M/1$ queueing system, the average time in the queue can be calculated by
+$$W_q = \frac{\lambda(\sigma^2 + \frac{1}{\mu^2})}{2(1 - \frac{\lambda}{\mu})} =
+\frac{0.8 \times (0.5196^2 + \frac{1}{1^2})}{2(1 - \frac{0.8}{1})} = 2.54$$
+So the average time in queue is 2.54 minutes.
+
+From this, $W$ can be calculated: $$W = W_q + E(S) = 2.54 + 1 = 3.54$$ The average total time in the system is 3.54 minutes.
+
+Using these two values, $L$ and $L_q$ can be calculated:
+$$\begin{aligned}
+&L = \lambda W = 0.8 \times 3.54 = 2.832 \\
+&L_q = \lambda W_q = 0.8 \times 2.54 = 2.032
+\end{aligned}$$
+
+The time-weighted average number of entities in the system is 2.832; the time-weighted average number of entities in the queue is 2.032.
+
+Finally, the utilization can be calculated as in Problem 1:
+$$\rho = \frac{\lambda}{c \mu} = \frac{0.8}{1 \times 1} = 0.8$$
+
+The single server is occupied 80% of the time.
+
+### Comparison with Problem 1
+The utilization of the server is the same as in Problem 1 -- this is sensible since the expected service time is the same.  However, the number of entities in the system & queue, as well as the average time in the system & queue, decreased.  This because the time (and therefore number of entities) is affected by the variance in the service time.  The standard deviation of this uniform distribution of 0.5196 is lower than that of the exponential distribution of 1.25 ($1/\lambda$).  The lower variance yields shorter wait times -- this makes intuitive sense as there are lower probabilities of service times over 1, leading to less possible congestion in the system.
+
+
+
+## Problem 3
+For a triangular distribution with range $a = 0.1$ to $b = 1.9$ and mode $m = 1.0$, the expected value is
+$$E(S) = \frac{a + m + b}{3} = \frac{0.1 + 1.0 + 1.9}{3} = \frac{2}{3} \\ 
+\mu = \frac{1}{E(S)} = \frac{3}{2} = 1.5$$
+
+The standard deviation of this distribution is given by
+$$\sqrt{\frac{a^2 + m^2 + b^2 - am - ab - bm}{18}} =
+\sqrt{\frac{0.1^2 + 1^2 + 1.9^2 - 0.1 \times 1 - 0.1 \times 1.9 - 1.9 \times 1}{18}}
+= 0.3674$$
+
+As above, for a $G/M/1$ queueing system, the average time in the queue can be calculated by
+$$W_q = \frac{\lambda(\sigma^2 + \frac{1}{\mu^2})}{2(1 - \frac{\lambda}{\mu})} =
+\frac{0.8 \times (0.3674^2 + \frac{1}{1.5^2})}{2(1 - \frac{0.8}{1.5})} 
+= 0.4967$$
+
+Using Little's Law, the remaining quantities can be obtained:
+$$\begin{aligned}
+W &= W_q + E(S) \\
+  &= 0.4967 + \frac{2}{3} \\
+  &= 1.1633 \\
+  \\
+L &= \lambda W \\
+  &= 0.8 \times 1.1633 \\
+  &= 0.9307 \\
+  \\
+L_q &= \lambda W_q \\
+  &= 0.8 \times 2.54 \\
+  &= 0.3973 \\
+  \\
+\rho &= \frac{\lambda}{c \mu} \\
+  &= \frac{0.8}{1 \times 1.5} \\
+  &= 0.5333
+\end{aligned}$$
+
+These results indicate the following:
+  - The average time in queue is roughly 0.50 minutes
+  - The average time in the system is roughly 1.16 minutes
+  - The average number of entities in queue is roughly 0.40
+  - The average number of entities in the system is 0.93
+  - The utilization of the single server is roughly 53%
+
+
+
+### Comparison with Problems 1 & 2
+The average times, average numbers, and utilization are all lower than Problems 1 & 2.  The lower occupancy is due to the faster expected service time (2/3 minute) than the previous problems (1 minute) -- this makes intuitive sense, as if the server processes entities faster, there will be more time available between entities.  The average lower times and numbers are due to a combination of this lower serving time paired with the lower standard deviation of the service times than either of the previous two problems.
+
+
+## Problem 5
+Using the same $\lambda = 1/1.25 = 0.8$ as the previous problems and $\mu = 1/E(S) = 1/3$, the utilization can be calculated:
+$$\rho = \frac{\lambda}{c\mu} = \frac{0.8}{3 \times \frac{1}{3}} = 0.8$$
+Each server in this system has the the same utilization as the single server in problem 1 -- this makes sense, since the servers are operating at one-third the speed but are tripled in number.
+
+For an $M/M/c$ queueing system, the probability of the system being empty is
+$$\begin{aligned}
+p(0) &= \frac{1}{\frac{(c\rho)^c}{c!(1-\rho)} + \sum_{n=0}^{c-1}\frac{(c\rho)^n}{n!}} \\
+  &= \frac{1}{\frac{(3 \times 0.8)^3}{3!(1-0.8)} + \sum_{n=0}^{2}\frac{(3 \times 0.8)^n}{n!}} \\
+  &= \frac{1}{13.824/1.2 + \left( 1 + 2.4 + 5.76/2 \right)} \\
+  &= 0.0562
+\end{aligned}$$
+
+This probability can then be used to calculate the average number of entities in queue:
+$$\begin{aligned}
+L_q &= \frac{\rho (c\rho)^c p(0)}{c!(1-\rho)^2} \\
+  &= \frac{0.8 \times \left(3 \times 0.8 \right)^3 \times 0.0562}
+  {3! \times \left(1 - 0.8 \right)^2} \\
+  &= 2.5888
+\end{aligned}$$
+
+Using Little's Law, the remaining three quantities are obtained:
+
+$$\begin{aligned}
+W_q &= \frac{L_q}{\lambda} \\
+  &= \frac{2.5888}{0.8} \\
+  &= 3.2360 \\
+  \\
+L &= L_q + \frac{\lambda}{\mu} \\
+  &= 2.5888 + \frac{0.8}{1/3} \\
+  &= 4.9888 \\
+  \\
+W &= \frac{L}{\lambda} \\
+  &= \frac{4.9888}{0.8} \\
+  &= 6.2360 = W_q + E(S)
+\end{aligned}$$
+
+\newpage
+These results indicate the following:
+
+  - The utilization of each server is roughly 80%
+  - The average number of entities in queue is roughly 2.59
+  - The average time in queue is roughly 3.24 minutes
+  - The average number of entities in the system is 4.99
+  - The average time in the system is roughly 6.24 minutes
+
+The time and number in queue are lower than those in  Problem 1 -- this makes sense given the increased number of servers.  However, the time and number in the system are far longer -- this makes sense since the expected service time is longer.
+
+### Comparison of Results
+A comparison of the setup and results of problems evaluated is below:
+
+```{r, echo=FALSE}
+Q1 <- c(0.8, 1, 1, 1, 1.25, 4, 5, 3.2, 4, 0.8)
+Q2 <- c(0.8, 1, 1, 1, 0.5196, 2.54, 3.54, 2.032, 2.832, 0.8)
+Q3 <- c(0.8, 0.667, 1.5, 1, 0.3674, 0.4967, 1.1633, 0.3973, 0.9307, 0.5333)
+Q5 <- c(0.8, 3, 0.333, 3, 1.25, 3.2360, 6.2360, 2.5888, 4.9888, 0.8)
+comp <- data.frame(Q1, Q2, Q3, Q5,
+                   row.names = c('$\\lambda$', '$E(S)$', '$\\mu$', '$c$', '$\\sigma$',
+                                 '$W_q$', '$W$', '$L_q$', '$L$', '$\\rho$'))
+pander::pander(round(comp, 2))
+```
+  
+
+## Problem 12
+From the information provided, the mean service times are as follows:
+
+  - $\mu_{sign} = 1/3 \approx 0.333$
+  - $\mu_{reg} = 1/5 = 0.2$
+  - $\mu_{traum} = 1/90 \approx 0.011$
+  - $\mu_{exam} = 1/16 = 0.0625$
+  - $\mu_{treat} = 1/15 \approx 0.067$
+
+The arrival rate at the sign-in desk is 6 minutes, so $\lambda_{sign} = 1/6 \approx 0.167$.  Per the textbook, the arrival rates for the invidual stations are:
+
+  - $\lambda_{reg} = 0.9 \lambda_{sign} = 0.15$
+  - $\lambda_{traum} = 0.1 \lambda_{sign} \approx 0.017$
+  - $\lambda_{exam} = 0.9 \lambda_{sign} = 0.15$
+  - $\lambda_{treat} = 0.64 \lambda_{sign} \approx 0.107$
+
+Finally, to calculate the utilization at each station, the number of servers $c$ is needed.  From Figure 2.1, these values are:
+
+  - $c_{sign} = 2$
+  - $c_{reg} = 1$
+  - $c_{traum} = 2$
+  - $c_{exam} = 3$
+  - $c_{treat} = 2$
+  
+Now, the intensities can be calculated using the formula $\rho = \frac{\lambda}{c \mu}$:
+$$\begin{aligned}
+&\rho_{sign} = \frac{\lambda_{sign}}{c_{sign} \mu_{sign}} &= 0.25 \\
+&\rho_{reg} = \frac{\lambda_{reg}}{c_{reg} \mu_{reg}} &= 0.75 \\
+&\rho_{traum} = \frac{\lambda_{traum}}{c_{traum} \mu_{traum}} &= 0.75 \\
+&\rho_{exam} = \frac{\lambda_{exam}}{c_{exam} \mu_{exam}} &= 0.80 \\
+&\rho_{treat} = \frac{\lambda_{treat}}{c_{treat} \mu_{treat}} &= 0.80
+\end{aligned}$$
+
+This clinic will be able to handle the external patient load, as each of the stations has an intensity less than 1.0, meaning that the system will not "explode" if additional patients come in.
+
+If an additional server were to be added, it should be added to the exam station.  The treatment and exam stations have the highest itensities of 0.8, so are the two stations that would be considered; since 90% of clinic patients pass through the exam rooms vs. 64% passing through the treatment rooms, an improvement in itensity at the exam rooms will have an effect for more patients in the system.  It should be noted, however, that adding a server to the treatment rooms ($c = 2$) will have a greater impact on station intensity than at the exam rooms ($c = 3$).

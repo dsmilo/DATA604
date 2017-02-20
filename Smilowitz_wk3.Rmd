@@ -1,0 +1,140 @@
+---
+title: 'DATA 604 Assignment 3: Types of Simulation'
+author: "Dan Smilowitz"
+date: "February 14, 2017"
+output:
+  pdf_document: 
+    fig_height: 4
+  html_document:
+    theme: flatly
+    syntax: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center')
+```
+
+
+## Problem 1
+The extensions to Model 3-1 are performed in the included `Smilowitz_wk3.xlsx' file.
+
+### Part a
+Included in the tab '1a', the number of simulations is expanded to 500 rows.
+
+![](wk3_1a.png)
+
+### Part b
+Reverting to 50 simulations, the dice are assigned a new weighting where the probability of a value is proportional to the value.  The new expected value of this weighted pair of dice is 8.6667.  The calculation of weights and results are in tab '1b'.
+
+![](wk3_1b.png)
+
+
+### Part c
+Two sets of 10,000 samples for fair dice (one for each die) are created using the "Random Number Generator" function of Excel's *Data Analysis* add-in -- the generated data can be viewed in the 'Data' tab of the workbook.  The observed average and distribution of sums are calculated and compared to the expected values in the '1c' tab.
+
+![](wk3_1c.png)
+
+## Problem 5
+As shown in tab '5', the standard deviation of the simulated results are calculated.  This value is used to calculate the standard error $se = s/\sqrt{n}$ for the sample.  For each of the required confidence levels, the associated z-score $z^*$ is calculated.  These values are then used to calculate the confidence intervals:
+$$CI = \bar{x} \pm se \times z^*$$
+
+![](wk3_5.png)
+
+Recalculating the simulated values in Excel multiple times, the 95% confidence interval rarely does not include the true value of 0.3663.  Meanwhile, the 99% interval nearly always includes the true value, while the 90% interval fails to cover the true value far more often.
+
+
+## Problem 17
+Because the demand can only take integer values, R's `sample` function is used to simulate daily demand for each produce item.
+
+```{r p17}
+library(tidyverse)
+
+# set up provided data
+produce <- c('oats', 'peas', 'beans', 'barley')
+wholesale <- c(1.05, 3.17, 1.99, 0.95)
+retail <- c(1.29, 3.76, 2.23, 1.65)
+min_sales <- rep(0, 4)
+max_sales <- c(10, 8, 14, 11)
+num_days <- 90
+
+# create container list for simulation results
+walther <- list()
+
+# create simulation for each item
+for (p in 1:length(produce)) {
+  set.seed(42) # set random number generator seed for replicability
+  sales <- sample(min_sales[p]:max_sales[p], num_days, replace = TRUE)
+  # store day number and calculate revenue, cost, and profit
+  df <- data.frame(day_no = 1:num_days, sales) %>%
+    mutate(revenue = sales * retail[p],
+           cost = sales * wholesale[p],
+           profit = revenue - cost)
+  df$item <- rep(produce[p], num_days) # add item name
+  # store in list
+  walther[[p]] <- df
+}
+
+# collapse list into single data frame (tbl_df)
+walther <- tbl_df(bind_rows(walther))
+
+# calculate daily and running sums
+daily <- walther %>% 
+  group_by(day_no) %>% 
+  summarise(revenue = sum(revenue),
+            cost = sum(cost),
+            profit = sum(profit)) %>%
+  mutate(
+    running_revenue = cumsum(revenue),
+    running_cost = cumsum(cost),
+    running_profit = cumsum(profit)
+  )
+
+# calculate total revenue, cost, and profit
+tot <- daily[nrow(daily), 5:7]
+
+# get daily and average sales by item
+item <- walther %>% 
+  group_by(item) %>% 
+  mutate(avg_sales = cummean(sales))
+```
+
+
+### Results
+Following this simulation, the final total figures are as follows:
+
+  - Revenue: $4357.36
+  - Cost:    $3500.76
+  - Profilt: $856.60
+  
+The progression of these values over time is presented below:
+```{r running-plot, echo=FALSE}
+ggplot(daily, aes(x = day_no)) +
+  geom_line(aes(y = running_revenue, col = 'Revenue')) +
+  geom_line(aes(y = running_cost, col = 'Cost')) +
+  geom_line(aes(y = running_profit, col = 'Profit')) +
+  scale_x_continuous('Day Number') + scale_y_continuous(NULL) +
+  scale_color_discrete(NULL, breaks = c('Revenue', 'Cost', 'Profit')) +
+  theme(legend.position = c(0.1, 0.9), legend.justification = c(0,1)) +
+  labs(title = 'Running totals of revenue, profit, and cost',
+       subtitle = 'Across all items over 90 days')
+```
+
+\newpage
+The profit day-by-day is shown below:
+```{r daily-plot, echo=FALSE}
+ggplot(daily, aes(x = day_no, y = profit)) + geom_col()
+```
+
+The daily demand and running average of daily demand are shown for each product:
+```{r demand-plot, echo=FALSE}
+library(scales)
+ggplot(item, aes(x = day_no)) +
+  geom_col(aes(y = sales), alpha = 0.5) +
+  geom_line(aes(y = avg_sales, col = item), show.legend = FALSE) +
+  facet_wrap(~item, scales = 'free_y') +
+  scale_y_continuous('Demand (lb)', breaks = pretty_breaks()) +
+  scale_x_continuous('') +
+  labs(title = 'Daily sales for each item available',
+       caption = 'Bars = Daily Value; Lines = Running Average')
+```
+
