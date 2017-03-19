@@ -1,0 +1,50 @@
+---
+title: 'DATA 604 Discussion 6: Random Variate Generation'
+author: "Dan Smilowitz"
+output: 
+  pdf_document: 
+    highlight: pygments
+---
+
+$$
+F(x) = 
+\begin{cases} 
+0 & x\leq -3 \\
+\frac{1}{2} + \frac{x}{6} & -3 < x \leq 0 \\
+\frac{1}{2} + \frac{x^2}{32} & 0 < x \leq 4 \\
+1 & x > 4 
+\end{cases}
+$$
+
+The first and fourth sections, setting $F(X) = R$ is trivial, yielding $R=0$ and $R=1$, respectively.  For the function in the range $-3 < x \leq 4$ yields
+
+$$\begin{array}{ccccc}
+R = \frac{1}{2} + \frac{X}{6} &\rightarrow &X + 3 = 6R &\rightarrow &X = 6R - 3\\
+R = \frac{1}{2} + \frac{X^2}{32} &\rightarrow &X^2 + 16 = 32R &\rightarrow &X = 4\sqrt{2R-1}
+\end{array}$$
+
+For the first of these sections, $-3 < x \leq 0$ equates to $0 < R \leq \frac{1}{2}$.  For the second of these sections, $0 < x \leq 4$ equates to $\frac{1}{2} < R \leq 1$.  This gives the final generator
+$$
+X = 
+\begin{cases} 
+6R - 3 & 0 < R \leq \frac{1}{2} \\
+4\sqrt{2R-1} & \frac{1}{2} < R \leq 1
+\end{cases}
+$$
+
+The `runif` function in R can now be used to generate 1000 random samples in the interval $[0,1]$ from the given distribution:
+```{r gen-sample, warning=FALSE}
+R <- runif(1000)
+X <- ifelse(R < 0.5, 6 * R - 3, 4 * sqrt(2 * R - 1))
+```
+
+```{r plot, message=FALSE, echo=FALSE, fig.align='center', fig.height=4}
+library(ggplot2)
+library(scales)
+ggplot(data.frame(X), aes(X)) +
+  geom_histogram(aes(y = ..count../sum(..count..)), binwidth = 0.2, alpha = 0.5, col = 'black') +
+  scale_y_continuous('Percent', labels = percent) +
+  labs(title = 'Histogram of 1000 generated samples') +
+  theme_minimal()
+```
+
