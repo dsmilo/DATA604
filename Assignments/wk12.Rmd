@@ -1,0 +1,26 @@
+---
+title: 'DATA 604 Assignment 12: Customization and Extension'
+author: "Dan Smilowitz"
+date: "April 19, 2017"
+output:
+  pdf_document: 
+    fig_height: 4.25
+    fig_caption: no
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center', comment=NA)
+```
+
+## Problem 1
+
+The differences and potential uses of the three ways of creating model logic are as follows:
+
+  - **Facility Model**: the model is built hierarchically using objects from the standard library window with possible customization through the creation of properties, states, and add-on processes.  This method is likely most useful when the model being created is a natural combination or extension of standard objects and their functionality.
+  
+  - **Process Model**: the model and objects are built using purely process models.  This method is useful when the functionality does not neatly fit into the buckets of object types offered by the standard library, as well as when performance is of greater concern than visualization -- process model objects often perform more quickly than their standard library counterparts, though possibly at the cost of intuitive visualization.
+  
+  - **Sub-Classed Model**: the model is built using custom objects that are created using existing objects as a base with a level of customization added.  This method is useful when objects are functionality is required beyond what is offered by the standard library, but where the high level of customizability offered by process models is not quite called for.
+  
+In summary, the model logic method should be chosen based upon the functionality requirements as compared to the functionality of the standard library.  If standard library objects can meet the needs of the model, the facility method should be used, as it is simplest to implement.  If highly-customized functionality is required, the process model method should be used, as it offers the greatest level of flexibility.  If standard library objects *almost* meet the modeling needs, but some customization is needed, sub-classed models offer the best combination of flexibility and ease of implementation.

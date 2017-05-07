@@ -1,0 +1,61 @@
+---
+title: 'DATA 604 Assignment 9: Model Data'
+author: "Dan Smilowitz"
+date: "April 2, 2017"
+output:
+  pdf_document: 
+    fig_height: 4.25
+    fig_caption: no
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center', comment=NA)
+```
+
+## Problem 6
+A Simio model is set up with two model entities, two sources, and two servers, both feeding to a single sink:
+
+![](wk9_6_setup.PNG)
+
+An arrival table is set up with the old schedule (1 patient every 10 minutes) and proposed new schedule (2 patients every 20 minutes), as shown below:
+
+![](wk9_6_arrivals.PNG)
+
+The two source objects are set to use this arrival table, with indicated arrival time deviation and no-show probabilities.  The properties of the `CurrentSchedule` source are shown below:
+
+![](wk9_6_source.PNG)
+
+Running this model for the hours of 8am - 12pm 100 times, the results for the doctor and patients under both proposed schedules is shown below:
+
+![](wk9_6_results.PNG)
+
+The total number of patients passing through the system is *identical* in both scenarios, but the variation on the current schedule is lower.  The average time in system for patients under the proposed schedule is higher by about 30%.  The doctor's utilization is higher in the proposed schedule, but only by a small amount.  Based on these results, it is not recommended that the clinic change its scheduling -- the improvements for the doctor is minimal and has an associated significant negative impact to patients.
+
+
+\newpage
+## Problem 7
+In order to account for the possibility of patients arriving as severe that need to be upgraded and receive immediate attention, an additional model entity is created.  To reflect the possibility of these patients being re-routed from the examination room to the trauma room, an additional path is created connecting these two servers.  The model facility is presented below:
+
+![](wk9_7_setup.PNG)
+
+In order to create and properly route Upgraded patients, the `PatientData` table is updated to include a new row for this patient type.  The patient mix for this patient type is set to be 10% of the patient mix of severe patients, and the patient mix for severe patients is lowered by 10%.  Upgraded patients are given an itital priority of 3.0001 to ensure that they are initially handled (nearly) the same as severe patients.  The sequence table is updated to include the sequence for Upgraded patients, as shown below:
+
+![](wk9_7_tables.PNG)
+
+To ensure that upgraded patients receive "immediate care", their priority is updated to 5 during examination to guarantee that they are seen fist by the stations they visit, since they are all set to have a processing logic of "Largest Value First" based on priority.  This is accomplished with an add-on process:
+
+![](wk9_7_process.PNG)
+
+The Decide step of the process is based on a condition of `ModelEntity.Priority==3.0001`, and the Assign process changes the state of `ModelEntity.Priority` to 5.
+
+\newpage
+The results of running Model 7-2 for 24 hours 100 times are below:
+
+![](wk9_7_results_orig.PNG)
+
+The results of the model accounting for "Upgraded" patients for the same conditions are below:
+
+![](wk9_7_results_upgrade.PNG)
+
+The inclusion of "Upgraded" patients unilaterally increases the time in system for all patient types, and lowers the throughput (`NumberDestroyed`/`NumberCreated`) for all patient types.

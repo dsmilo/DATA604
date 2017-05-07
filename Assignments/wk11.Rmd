@@ -1,0 +1,81 @@
+---
+title: 'DATA 604 Assignment 11: Advanced Modeling'
+author: "Dan Smilowitz"
+date: "April 23, 2017"
+output:
+  pdf_document: 
+    fig_height: 4.25
+    fig_caption: no
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, fig.align='center', comment=NA)
+```
+
+## Optimization of Current Model
+The facility for Model 9-1 as illustrated in the text is shown below:
+
+![](wk11_setup.PNG)
+
+Running this model for 10 days with the default values, the average wait time for urgent patients is just short of 2 hours:
+
+![](wk11_urgent_asis.PNG)
+
+Using the *OptQuest* and *Select Best Scenario Using KN* plugins, along with the *Subset Selection* tool, the optimal Total Cost (**TC**) with a minimum **Satisfaction** of patients of 0.8 occurs with the following setup:
+
+  - Staffing:
+    - 1 Doctor
+    - 1 Nurse
+  - Capacity:
+    - 1 Exam Room
+    - 3 Treatment Rooms
+    - 1 Trauma Room
+
+![](wk11_optquest.PNG)
+
+
+## Preemption for Urgent Patients
+In order to adapt the system to allow for ugent patients to preempt a doctor assigned to another non-urgent patient, the following high-level logic must be implemented via processes:
+
+  - When urgent patient arrives, check if doctor available
+    - If so, proceed normally
+  - If doctor is unavailable, check if currently occupied with urgent patient
+    - If so, proceed normally
+  - If not, interrupt processing and release doctor
+  - Seize doctor and process patient
+  - After urgent patient is processed, release doctor and return to previous patient
+
+Implementation of this logic was attempted through a number of add-on processes.
+
+### Processes at Servers
+First, an add-on process was added at the Trauma and Treatment servers, both set to be triggered when a resource enters the respective servers:
+
+![](wk11_process_trauma.PNG)
+
+This process caused an error in the release step, so was modified:
+
+![](wk11_process_treatment1.PNG)
+
+This process did not create an error, but yielded the same wait times as above for urgent patients; thus it was easily concluded that it did not have the desired effect.  As such, the process was further tweaked to see if the doctor resource was owned at the Exam Room server prior to releasing & seizing:
+
+![](wk11_process_treatment2.PNG)
+
+Unfortunately, this process yielded the same lack of impact.  As such, processes related to the doctor resource itself were considered.
+
+
+### Processes at Resource
+The Doctor resource has different add-on process triggers than the servers; these include *Allocated*, *Released*, and *Evaluating Seize Request*.  Given the shortcomings of the server-based add-on processes, the preemption was attempted via use of these triggers:
+
+![](wk11_process_doctor.PNG)
+
+These processes seek to carry out preemption in the following way:
+  - If the doctor is available, proceed as normal
+  - If the doctor is unavailable and the patient is urgent, accept the request
+  - When allocating, release the doctor from the current patient, unless the current patient is also urgent.  This also yielded an error:
+
+![](wk11_error.PNG)
+
+Curiously, the error message indicates that the error in the release step was triggered by the *TraumaRooms_Processed* process, which was in place and working successfully in the as-is model.
+
+Unfortunately, trial and error with a combination of process steps, logic, and routing were unsuccessful in creating a system where urgent patients are able to preempt doctors from non-urgent patients.

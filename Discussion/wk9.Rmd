@@ -1,0 +1,42 @@
+---
+title: 'DATA 604 Discussion 9: Variance Reduction'
+author: "Dan Smilowitz"
+output:
+  pdf_document:
+    highlight: pygments
+---
+
+The inverse cdf $F^{-1}(u)$ can be obtained by integrating $f(x)$, setting the result equal to $u$, and solving for $x$:
+
+$$\begin{array}{c}
+f(x) = \frac{x}{\sigma^2} e^{-x^2/2\sigma^2} \\
+F(x) = \int f(x) dx = - e^{-x^2/2\sigma^2} = u\\
+F^{-1}(u) = \sigma \sqrt{-2 \ln (u)}
+\end{array}$$
+
+For a given $\sigma$, the value can be estimated using antithetic variables.  When generating $m$ samples, $X$ represents values generated from $\frac{m}{2}$ samples $u$ from the uniform distribution, and $X^\prime$ represents values generated from the antithetic sample $u^\prime =1-u$.  $X_2$ represents a second set of values generated from $\frac{m}{2}$ samples $u_2$.
+
+\vspace{1em}
+
+```{r}
+antithetic <- function(m, sigma = 1) {
+  # get first set of random numbers & variates
+  u <- runif(m / 2)
+  x <- sigma * sqrt(-2 * log(u))
+  # get antithetic numbers & variates
+  uprime <- 1 - u
+  xprime <- sigma * sqrt(-2 * log(uprime))
+  # get second set of numbers & variates
+  u2 <- runif(m / 2)
+  x2 <- sigma * sqrt(-2 * log(u2))
+  # get variances of (x + xprime) / 2 and (x + x2) / 2
+  var_prime <- (var(x) + var(xprime) + 2 * cov(x, xprime)) / 4
+  var_2 <- (var(x) + var(x2) + 2 * cov(x, x2)) / 4
+  # return pecent variance reduction
+  return((var_2 - var_prime) / var_2)
+}
+```
+
+\vspace{1em}
+
+Running this function for $m=10000$ 100 times, the average variance reduction is about 95%.
